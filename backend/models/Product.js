@@ -5,7 +5,12 @@ const productSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   description: { type: String, required: true },
   image: { type: String, required: true }, 
-  category: { type: String, required: true },
+  // CHANGED: This now points specifically to the Category model ID
+  category: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Category', 
+    required: true 
+  },
   createdAt: { type: Date, default: Date.now }
 });
 

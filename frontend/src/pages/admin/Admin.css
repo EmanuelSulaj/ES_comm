@@ -895,3 +895,53 @@
 .modal-body {
   padding: 30px; 
 }
+
+/* Base style for the textboxes */
+.admin-input, 
+.center-modal input, 
+.center-modal textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd; /* Light gray default */
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+}
+
+/* 1. HOVER STATE: Subtle gray-to-darker-gray transition */
+.admin-input:hover, 
+.center-modal input:hover, 
+.center-modal textarea:hover {
+  border-color: #bbb; /* Becomes slightly darker on hover */
+  background-color: #fafafa; /* Very subtle background shift */
+}
+
+/* 2. FOCUS STATE (Selected): Emerald Green */
+.admin-input:focus, 
+.center-modal input:focus, 
+.center-modal textarea:focus {
+  border-color: #10b981 !important; /* Emerald Green */
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15) !important; /* Soft green glow */
+  background-color: #fff !important; /* Return to pure white when typing */
+  border-width: 1.5px;
+}
+.btn-secondary {
+  background-color: transparent;
+  color: #666;
+  border: 1px solid #ddd;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #f9f9f9;
+  color: #333;
+  border-color: #ccc;
+}
+
+
+

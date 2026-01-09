@@ -8,7 +8,7 @@ import './ProductDetail.css';
 function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart, clearCart } = useCart();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -52,29 +52,12 @@ function ProductDetail() {
     setTimeout(() => setShowSuccess(false), 2000);
   };
 
-  const handleBuyNow = async () => {
-  try {
-    const response = await fetch('http://localhost:5000/api/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        cartItems: [{
-          name: product.name,
-          image: product.image,
-          price: product.price,
-          quantity: quantity
-        }]
-      }),
-    });
-
-    const data = await response.json();
-    if (data.url) {
-      window.location.href = data.url; // Redirects to Stripe
-    }
-  } catch (error) {
-    console.error("Checkout error:", error);
-  }
+  const handleBuyNow = () => {
+  clearCart();
+  addToCart(product, quantity);
+  navigate('/checkout'); 
 };
+
 
   if (loading) return <div className="loading-state">Loading Product...</div>;
 

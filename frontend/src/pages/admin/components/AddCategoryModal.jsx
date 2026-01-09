@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 
 function AddCategoryModal({ isOpen, onClose, onAddCategory }) {
   const [categoryName, setCategoryName] = useState('');
+  const [description, setDescription] = useState('');
+  const [categoryDescription, setCategoryDescription] = useState('');
 
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (categoryName.trim()) {
-      onAddCategory(categoryName);
-      setCategoryName(''); // Clear input for next time
+      onAddCategory({ name: categoryName, description: categoryDescription });
+      setCategoryName(''); 
+      setCategoryDescription('');
       onClose();
     }
   };
@@ -33,6 +36,18 @@ function AddCategoryModal({ isOpen, onClose, onAddCategory }) {
                 value={categoryName}
                 onChange={(e) => setCategoryName(e.target.value)}
                 required 
+              />
+            </div>
+
+            {/* 3. New Description Field */}
+            <div className="form-group" style={{ marginTop: '15px' }}>
+              <label>Description</label>
+              <textarea 
+                placeholder="Enter category description" 
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows="3"
+                className="modal-textarea" // Use your existing modal-textarea class
               />
             </div>
 

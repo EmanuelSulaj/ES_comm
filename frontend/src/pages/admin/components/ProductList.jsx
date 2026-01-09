@@ -45,6 +45,7 @@ function ProductList() {
   };
 
   // 4. Handle Edit Button Click
+    // 4. Handle Edit Button Click
   const handleEditClick = (product) => {
     setEditId(product._id);
     setIsEditing(true);
@@ -127,7 +128,7 @@ function ProductList() {
             {products.map((product) => (
               <tr key={product._id}> 
                 <td>{product.name}</td>
-                <td>{product.category}</td>
+                <td>{product.category?.name || 'No Category'}</td>
                 <td>${product.price}</td>
                 <td>{product.status || 'Active'}</td>
                 <td className="actions-buttons"> 
