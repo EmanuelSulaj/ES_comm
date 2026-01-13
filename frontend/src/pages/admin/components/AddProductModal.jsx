@@ -29,55 +29,61 @@ function AddProductModal({ isOpen, onClose, onSubmit, formData, setFormData, isE
   if (!isOpen) return null;
 
  
-
-  // Handle image selection and create a preview URL
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData({ 
-        ...formData, 
-        image: URL.createObjectURL(file) 
-      });
-    }
-  };
-
-  // Handle text and select input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
+  // Handle image selection and create a preview URL
+  const handleImageChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    // Create the temporary preview URL
+    const previewUrl = URL.createObjectURL(file);
+    setFormData({ 
+      ...formData, 
+      image: previewUrl 
+    });
+  }
+};
+
+
   const handleSubmitInternal = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    let imageUrl = formData.image;
+  // Start with the existing image (useful if we are editing and didn't change the photo)
+  let imageUrl = formData.image;
 
-    // Only upload to Cloudinary if a NEW file was selected
-    const file = fileInputRef.current?.files[0];
-    if (file) {
-      const data = new FormData();
-      data.append("file", file);
-      data.append("upload_preset", "otfzteyi");
+  // Check if a NEW file was actually selected in the input
+  const file = fileInputRef.current?.files[0];
+  
+  if (file) {
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", "otfzteyi");
 
-      try {
-        const cloudRes = await fetch("https://api.cloudinary.com/v1_1/dlrvxzktf/image/upload", {
-          method: "POST",
-          body: data,
-        });
-        const cloudData = await cloudRes.json();
-        imageUrl = cloudData.secure_url;
-      } catch (error) {
-        console.error("Cloudinary upload failed", error);
-        return;
-      }
+    try {
+      const cloudRes = await fetch("https://api.cloudinary.com/v1_1/dlrvxzktf/image/upload", {
+        method: "POST",
+        body: data,
+      });
+      const cloudData = await cloudRes.json();
+      
+      // Update our variable with the PERMANENT HTTPS link
+      imageUrl = cloudData.secure_url; 
+    } catch (error) {
+      console.error("Cloudinary upload failed", error);
+      alert("Image upload failed. Please try again.");
+      return;
     }
+  }
 
-    // 2. This now correctly calls the prop 'onSubmit' passed from ProductList.jsx
-    if (onSubmit) {
-      const finalData = { ...formData, image: imageUrl };
-      onSubmit(e, finalData); 
-    }
-  };
+  // Send the clean data (with permanent URL) to the parent's onSubmit function
+  if (onSubmit) {
+    const finalData = { ...formData, image: imageUrl };
+    onSubmit(e, finalData); 
+  }
+};
 
   return (
   <div className="modal-overlay" onClick={onClose}>

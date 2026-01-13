@@ -10,6 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { CartProvider } from './Context/CartContext';
 import Success from './pages/Success';
 import Checkout from './pages/Checkout';
+import SalesAnalytics from './pages/admin/components/SalesAnalytics';
 import './App.css';
 
 function AppContent() {
@@ -28,8 +29,9 @@ function AppContent() {
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/success" element={<Success />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/sales" element={<SalesAnalytics />} />
           <Route 
-            path="/admin" 
+            path="/admin/*" 
             element={
               <ProtectedRoute>
                 <Admin />

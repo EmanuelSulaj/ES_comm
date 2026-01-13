@@ -7,6 +7,8 @@ import ProductList from './components/ProductList';
 import Categories from './components/Categories';
 import ComingSoon from './components/ComingSoon';
 import AddProduct from './components/AddProduct';
+import SalesAnalytics from './components/SalesAnalytics';
+import Customers from './components/Customers';
 import './Admin.css';
 
 function Admin() {
@@ -39,9 +41,9 @@ function Admin() {
           </div>
         );
       case 'sales':
-        return <ComingSoon title="Sales analytics" />;
+        return <SalesAnalytics />;
       case 'customers':
-        return <ComingSoon title="Customer management" />;
+        return <Customers />;
       case 'inventory':
         return <ComingSoon title="Inventory management" />;
       case 'notifications':

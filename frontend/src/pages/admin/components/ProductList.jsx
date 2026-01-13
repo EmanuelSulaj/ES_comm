@@ -54,39 +54,40 @@ function ProductList() {
       description: product.description,
       price: product.price,
       offerPrice: product.offerPrice || '',
-      category: product.category,
+      category: product._category,
       image: product.image
     });
     setIsModalOpen(true);
   };
 
-  // 5. FIX: Define handleSubmit (Handles both Add and Edit)
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Switch URL and Method based on mode
-    const url = isEditing 
-      ? `http://localhost:5000/api/products/${editId}` 
-      : 'http://localhost:5000/api/products';
-    
-    const method = isEditing ? 'PUT' : 'POST';
+  // 5. UPDATED: Accept finalData as the second argument
+const handleSubmit = async (e, finalData) => {
+  e.preventDefault();
+  
+  const url = isEditing 
+    ? `http://localhost:5000/api/products/${editId}` 
+    : 'http://localhost:5000/api/products';
+  
+  const method = isEditing ? 'PUT' : 'POST';
 
-    try {
-      const response = await fetch(url, {
-        method: method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+  // CRITICAL: We use 'finalData' instead of 'formData' 
+  // because finalData has the permanent Cloudinary URL!
+  try {
+    const response = await fetch(url, {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(finalData), 
+    });
 
-      if (response.ok) {
-        fetchProducts(); // Refresh the list
-        handleCloseModal(); // Close and reset
-        alert(isEditing ? "Product updated!" : "Product added!");
-      }
-    } catch (error) {
-      console.error("Submit error:", error);
+    if (response.ok) {
+      fetchProducts(); // Refresh the list from the database
+      handleCloseModal(); // Close and reset
+      alert(isEditing ? "Product updated!" : "Product added!");
     }
-  };
+  } catch (error) {
+    console.error("Submit error:", error);
+  }
+};
 
   const handleDelete = async (productId) => {
     if (window.confirm("Are you sure you want to delete this product?")) {

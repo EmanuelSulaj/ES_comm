@@ -7,6 +7,10 @@ const bcrypt = require('bcryptjs');
 const User = require('./models/User');
 const Product = require('./models/Product');
 const Category = require('./models/Category');
+const salesRoutes = require('./routes/Sales');
+const AuthRoutes = require('./routes/Auth');
+const orderRoutes = require('./routes/orderRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 dotenv.config();
 const app = express();
@@ -36,6 +40,10 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), (req, res) =
 // 2. MIDDLEWARE - After Webhook
 app.use(cors()); 
 app.use(express.json()); 
+app.use('/api/sales', salesRoutes);
+app.use('/api/auth', AuthRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 3. PAYMENT ROUTES
 
@@ -53,39 +61,6 @@ app.post('/api/create-payment-intent', async (req, res) => {
     } catch (error) {
         console.error("Payment Intent Error:", error.message);
         res.status(500).json({ error: error.message });
-    }
-});
-
-// 4. AUTH ROUTES
-app.post('/api/register', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const userExists = await User.findOne({ email });
-        if (userExists) return res.status(400).json({ message: "User already exists" });
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ email, password: hashedPassword });
-        await newUser.save();
-
-        const token = jwt.sign({ id: newUser._id, role: newUser.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
-        res.status(201).json({ token, user: { id: newUser._id, email: newUser.email, role: newUser.role } });
-    } catch (err) {
-        res.status(500).json({ message: "Server error during registration" });
-    }
-});
-
-app.post('/api/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email });
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            return res.status(400).json({ message: "Invalid credentials" });
-        }
-
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
-        res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
-    } catch (err) {
-        res.status(500).json({ message: "Server error" });
     }
 });
 
@@ -221,5 +196,20 @@ app.delete('/api/categories/:id', async (req, res) => {
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("✅ MongoDB Connected"))
     .catch(err => console.error("❌ MongoDB Error:", err.message));
+
+    // DELETE THIS AFTER TESTING
+app.get('/api/test-db', async (req, res) => {
+    try {
+        const count = await mongoose.connection.db.collection('orders').countDocuments();
+        const collections = await mongoose.connection.db.listCollections().toArray();
+        res.json({ 
+            orderCount: count, 
+            availableCollections: collections.map(c => c.name),
+            dbName: mongoose.connection.db.databaseName 
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 app.listen(5000, () => console.log(`🚀 Server running on port 5000`));

@@ -27,13 +27,24 @@ function ProductDetail() {
         const data = await res.json();
         setProduct(data);
 
-        // 2. Fetch all products to filter for "Related" items
         const allRes = await fetch(`http://localhost:5000/api/products`);
         const allData = await allRes.json();
+
         const related = allData
-          .filter(p => p._id !== id && p.category === data.category)
-          .slice(0, 4);
-        setRelatedProducts(related);
+  .filter(p => {
+    // 1. Exclude the current product
+    const isNotCurrent = p._id !== id;
+
+    // 2. Get IDs as strings (handles both populated objects and plain strings)
+    const pCatId = p.category?._id?.toString() || p.category?.toString();
+    const currentCatId = data.category?._id?.toString() || data.category?.toString();
+
+    // 3. Compare the string values
+    return isNotCurrent && pCatId === currentCatId;
+  })
+  .slice(0, 4);
+  setRelatedProducts(related);
+        
 
       } catch (error) {
         console.error("Error:", error);
@@ -53,22 +64,33 @@ function ProductDetail() {
   };
 
   const handleBuyNow = () => {
-  clearCart();
-  addToCart(product, quantity);
-  navigate('/checkout'); 
+  // Clear snapshot, not the cart
+  localStorage.removeItem('order_snapshot');
+
+  // Save a single-product snapshot
+  const snapshot = [{
+    _id: product._id,
+    name: product.name,
+    price: product.price,
+    image: product.image,
+    quantity: quantity || 1
+  }];
+
+  localStorage.setItem('order_snapshot', JSON.stringify(snapshot));
+  localStorage.setItem('order_total', (product.price * (quantity || 1)).toFixed(2));
+
+  // Do NOT touch the main cart
+  navigate('/checkout');
 };
 
+// ADD THIS
+if (loading) {
+  return <div className="product-detail-page">Loading...</div>;
+}
 
-  if (loading) return <div className="loading-state">Loading Product...</div>;
-
-  if (!product) {
-    return (
-      <div className="product-not-found">
-        <h2>Product not found</h2>
-        <button onClick={() => navigate('/')}>Back to Home</button>
-      </div>
-    );
-  }
+if (!product) {
+  return <div className="product-detail-page">Product not found.</div>;
+}
 
   return (
     <div className="product-detail-page">
@@ -88,7 +110,7 @@ function ProductDetail() {
             
             <div className="product-price-section">
               <span className="product-price">${product.price}</span>
-              <span className="stock-status in-stock">✓ Available in {product.category}</span>
+              <span className="stock-status in-stock">✓ Available in {product.category?.name}</span>
             </div>
 
             <p className="product-short-description">{product.description}</p>
@@ -119,7 +141,7 @@ function ProductDetail() {
             </div>
             
             <div className="tab-content">
-              {activeTab === 'description' ? <p>{product.description}</p> : <p>Category: {product.category}</p>}
+              {activeTab === 'description' ? <p>{product.description}</p> : <p>Category: {product.category?.name}</p>}
             </div>
           </div>
         </div>

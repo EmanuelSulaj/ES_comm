@@ -10,6 +10,7 @@ function Cart() {
 
  // Simple navigation to your internal custom checkout page
   const handleCheckout = () => {
+    localStorage.setItem('order_snapshot', JSON.stringify(cart));
     if (cart.length === 0) {
       alert("Your cart is empty");
       return;
