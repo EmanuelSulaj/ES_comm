@@ -11,6 +11,7 @@ const salesRoutes = require('./routes/Sales');
 const AuthRoutes = require('./routes/Auth');
 const orderRoutes = require('./routes/orderRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const InventoryRoutes = require('./routes/inventory');  
 
 dotenv.config();
 const app = express();
@@ -31,7 +32,7 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), (req, res) =
     if (event.type === 'payment_intent.succeeded') {
         const paymentIntent = event.data.object;
         console.log('💰 Payment Success:', paymentIntent.id);
-        // Add DB fulfillment logic here
+      
     }
 
     res.json({ received: true });
@@ -44,8 +45,9 @@ app.use('/api/sales', salesRoutes);
 app.use('/api/auth', AuthRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/inventory', InventoryRoutes);
 
-// 3. PAYMENT ROUTES
+
 
 // This is the route your CUSTOM Checkout.jsx uses
 app.post('/api/create-payment-intent', async (req, res) => {
@@ -134,9 +136,9 @@ app.get('/api/categories', async (req, res) => {
         const categoriesWithCounts = await Category.aggregate([
             {
                 $lookup: {
-                    from: 'products',          // The collection name in MongoDB (usually lowercase plural)
-                    localField: '_id',         // The Category's ID
-                    foreignField: 'category',  // The field in the Product document
+                    from: 'products',          
+                    localField: '_id',         
+                    foreignField: 'category',  
                     as: 'products'
                 }
             },
@@ -144,7 +146,7 @@ app.get('/api/categories', async (req, res) => {
                 $project: {
                     name: 1,
                     description: 1,
-                    // Count how many products matched this category ID
+                
                     count: { $size: '$products' } 
                 }
             }
@@ -197,19 +199,5 @@ mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("✅ MongoDB Connected"))
     .catch(err => console.error("❌ MongoDB Error:", err.message));
 
-    // DELETE THIS AFTER TESTING
-app.get('/api/test-db', async (req, res) => {
-    try {
-        const count = await mongoose.connection.db.collection('orders').countDocuments();
-        const collections = await mongoose.connection.db.listCollections().toArray();
-        res.json({ 
-            orderCount: count, 
-            availableCollections: collections.map(c => c.name),
-            dbName: mongoose.connection.db.databaseName 
-        });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
 
 app.listen(5000, () => console.log(`🚀 Server running on port 5000`));

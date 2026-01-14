@@ -5,6 +5,7 @@ import { useCart } from '../Context/CartContext';
 import ProductCard from '../components/ProductCard';
 import './ProductDetail.css';
 
+
 function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ function ProductDetail() {
   const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
+
     const fetchProductAndRelated = async () => {
       try {
         setLoading(true);
@@ -25,7 +27,8 @@ function ProductDetail() {
         const res = await fetch(`http://localhost:5000/api/products/${id}`);
         if (!res.ok) throw new Error("Product not found");
         const data = await res.json();
-        setProduct(data);
+        setProduct({ stock: 0, ...data });
+
 
         const allRes = await fetch(`http://localhost:5000/api/products`);
         const allData = await allRes.json();
@@ -54,7 +57,7 @@ function ProductDetail() {
     };
 
     fetchProductAndRelated();
-    window.scrollTo(0, 0); // Scroll to top when ID changes
+    window.scrollTo(0, 0); 
   }, [id]);
 
   const handleAddToCart = () => {
@@ -64,7 +67,6 @@ function ProductDetail() {
   };
 
   const handleBuyNow = () => {
-  // Clear snapshot, not the cart
   localStorage.removeItem('order_snapshot');
 
   // Save a single-product snapshot
@@ -79,11 +81,9 @@ function ProductDetail() {
   localStorage.setItem('order_snapshot', JSON.stringify(snapshot));
   localStorage.setItem('order_total', (product.price * (quantity || 1)).toFixed(2));
 
-  // Do NOT touch the main cart
   navigate('/checkout');
 };
 
-// ADD THIS
 if (loading) {
   return <div className="product-detail-page">Loading...</div>;
 }
@@ -98,7 +98,7 @@ if (!product) {
         <button onClick={() => navigate(-1)} className="back-button">← Back</button>
 
         <div className="product-detail-content">
-          {/* Main Product Image */}
+        
           <div className="product-images">
             <div className="main-image">
               <img src={product.image} alt={product.name} />
@@ -110,8 +110,17 @@ if (!product) {
             
             <div className="product-price-section">
               <span className="product-price">${product.price}</span>
-              <span className="stock-status in-stock">✓ Available in {product.category?.name}</span>
+              <span
+                className={`stock-status ${
+                  product.stock > 0 ? 'in-stock' : 'out-of-stock'
+               }`}
+              >
+                  {product.stock > 0
+                  ? `✓ In stock (${product.stock} available)`
+                  : '✗ Out of stock'}
+                </span>
             </div>
+
 
             <p className="product-short-description">{product.description}</p>
 

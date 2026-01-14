@@ -9,6 +9,7 @@ import ComingSoon from './components/ComingSoon';
 import AddProduct from './components/AddProduct';
 import SalesAnalytics from './components/SalesAnalytics';
 import Customers from './components/Customers';
+import Inventory from './components/Inventory';
 import './Admin.css';
 
 function Admin() {
@@ -45,7 +46,7 @@ function Admin() {
       case 'customers':
         return <Customers />;
       case 'inventory':
-        return <ComingSoon title="Inventory management" />;
+        return <Inventory />;
       case 'notifications':
         return <ComingSoon title="Notifications center" />;
       case 'settings':

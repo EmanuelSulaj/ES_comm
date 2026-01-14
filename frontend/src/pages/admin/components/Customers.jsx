@@ -22,7 +22,7 @@ const Customers = () => {
     fetchCustomers();
   }, []);
 
-  // Use optional chaining for reduce to handle empty states safely
+  
   const totalRevenue = customers?.reduce((sum, c) => sum + (c.totalSpent || 0), 0) || 0;
 
   if (loading) return <div className="loader">Loading Customers...</div>;
