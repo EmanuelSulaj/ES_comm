@@ -1,67 +1,136 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import StatsCard from './StatsCard';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import SalesChart from './SalesChart';
+import CategoryChart from './CategoryChart';
+
 
 function Dashboard() {
+  const [data, setData] = useState({ totalSales: 0, customers: 0, orders: 0, products: 0 });
+  const [chartData, setChartData] = useState([]);
+  const [categoryData, setCategoryData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+  const fetchAllData = async () => {
+    try {
+      const [statsRes, trendRes, categoryRes] = await Promise.all([
+        fetch('http://localhost:5000/api/admin/dashboard-stats'),
+        fetch('http://localhost:5000/api/admin/sales-trend'),
+        fetch('http://localhost:5000/api/admin/category-distribution')
+      ]);
+
+      // If category fetch fails or is empty, use dummy data so the UI doesn't look broken
+      const categoryResult = categoryRes.ok ? await categoryRes.json() : [];
+      
+      if (categoryResult.length === 0) {
+        setCategoryData([
+          { name: 'No Sales Yet', value: 1 } // Placeholder
+        ]);
+      } else {
+        setCategoryData(categoryResult);
+      }
+
+      const statsResult = await statsRes.json();
+      const trendResult = await trendRes.json();
+
+      setData(statsResult);
+      setChartData(trendResult);
+      setLoading(false);
+    } catch (err) {
+      console.error("Dashboard fetch error:", err);
+      // Fallback data so the admin can still see the layout
+      setCategoryData([{ name: 'Error Loading', value: 1 }]);
+      setLoading(false);
+    }
+  };
+
+  fetchAllData();
+}, []);
+
+
   const stats = [
     {
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-        </svg>
-      ),
       title: 'Total Sales',
-      value: '$45,231',
-      change: { text: '+12.5% from last month', type: 'positive' },
-      iconBackground: '#10b981'
+      value: `$${data.totalSales.toLocaleString()}`,
+      iconBackground: '#10b981',
+      change: { text: 'Live revenue', type: 'positive' },
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+      )
     },
     {
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-          <circle cx="8.5" cy="7" r="4" />
-          <path d="M20 8v6M23 11h-6" />
-        </svg>
-      ),
       title: 'Customers',
-      value: '2,431',
-      change: { text: '+8.2% from last month', type: 'positive' },
-      iconBackground: '#9110b9'
+      value: data.customers.toLocaleString(),
+      iconBackground: '#9110b9',
+      change: { text: 'Accounts registered', type: 'positive' },
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      )
     },
     {
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-          <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg>
-      ),
-      title: 'Products',
-      value: '342',
-      change: { text: '+5 new products', type: 'positive' },
-      iconBackground: '#10b981'
-    },
-    {
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-          <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-      ),
       title: 'Orders',
-      value: '1,234',
-      change: { text: '+15.3% from last month', type: 'positive' },
-      iconBackground: '#10b981'
+      value: data.orders.toLocaleString(),
+      iconBackground: '#f59e0b',
+      change: { text: 'Completed', type: 'positive' },
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <path d="M16 10a4 4 0 0 1-8 0"></path>
+        </svg>
+      )
+    },
+    {
+      title: 'Total Products',
+      value: data.products.toLocaleString(),
+      iconBackground: '#3b82f6',
+      change: { text: 'Items in catalog', type: 'positive' },
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+          <line x1="12" y1="22.08" x2="12" y2="12"></line>
+        </svg>
+      )
     }
   ];
 
+
+  if (loading) return <div>Loading...</div>;
+
   return (
     <div className="admin-content">
-      <h1>Dashboard</h1>
+      <h1>Dashboard Overview</h1>
       <div className="stats-grid">
         {stats.map((stat, index) => (
           <StatsCard key={index} {...stat} />
         ))}
+      </div>
+
+      <div className="dashboard-charts" style={{ 
+        display: 'grid', 
+        gridTemplateColumns: '2fr 1fr', 
+        gap: '20px', 
+        marginTop: '30px' 
+      }}>
+        
+      </div>
+
+        <div className="dashboard-charts" style={{ marginTop: '2rem' }}>
+        <SalesChart data={chartData} />
+        <CategoryChart data={categoryData} />
       </div>
     </div>
   );
 }
 
 export default Dashboard;
-

@@ -24,7 +24,7 @@ const Inventory = () => {
     fetchProducts();
   }, []);
 
-  // Adjust stock by amount
+  
   const updateStock = async (id, amount) => {
     try {
       await fetch(`http://localhost:5000/api/inventory/${id}/adjust`, {
